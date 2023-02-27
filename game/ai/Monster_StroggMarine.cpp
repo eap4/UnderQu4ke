@@ -204,7 +204,7 @@ bool rvMonsterStroggMarine::CheckAction_JumpBack ( rvAIAction* action, int animN
 	if ( !TestAnimMove ( animNum ) ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -222,7 +222,7 @@ bool rvMonsterStroggMarine::CheckAction_EvadeLeft ( rvAIAction* action, int anim
 	if ( !TestAnimMove ( animNum ) ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -240,7 +240,7 @@ bool rvMonsterStroggMarine::CheckAction_EvadeRight ( rvAIAction* action, int ani
 	if ( !TestAnimMove ( animNum ) ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -268,7 +268,7 @@ bool rvMonsterStroggMarine::CheckAction_Strafe ( rvAIAction* action, int animNum
 		}
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -291,7 +291,8 @@ bool rvMonsterStroggMarine::CheckAction_RangedAttack ( rvAIAction* action, int a
 		//the closer you are, the more likely you are to not attack
 		return false;
 	}
-	return idAI::CheckAction_RangedAttack( action, animNum );
+	/*return idAI::CheckAction_RangedAttack(action, animNum);*/
+	return false;
 }
 
 /*
@@ -320,7 +321,7 @@ bool rvMonsterStroggMarine::CheckAction_CrouchRangedAttack ( rvAIAction* action,
 	if ( animNum != -1 && !CanHitEnemyFromAnim( animNum ) ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -335,8 +336,8 @@ bool rvMonsterStroggMarine::CheckAction_RollAttack ( rvAIAction* action, int ani
 	}
 	if ( !TestAnimMove ( animNum ) ) {
 		return false;
-	}
-	return true;
+	} 
+	return false;
 }
 
 /*
@@ -356,7 +357,7 @@ bool rvMonsterStroggMarine::CheckAction_SprayAttack ( rvAIAction* action, int an
 	{//not moving
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -369,7 +370,7 @@ bool rvMonsterStroggMarine::CheckAction_Angry ( rvAIAction* action, int animNum 
 	if ( !enemy.ent || !enemy.fl.inFov || !enemy.fl.visible ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -381,7 +382,7 @@ bool rvMonsterStroggMarine::CheckAction_Reload ( rvAIAction* action, int animNum
 	if ( !enemy.ent || !enemy.fl.inFov || !enemy.fl.visible ) {
 		return false;
 	}
-	return true;
+	return false;
 }
 
 /*
@@ -477,7 +478,6 @@ stateResult_t rvMonsterStroggMarine::State_Torso_RollAttack ( const stateParms_t
 	}	
 	return SRESULT_ERROR;
 }
-
 
 /*
 ================
@@ -671,7 +671,7 @@ bool rvMonsterStroggMarine::EnemyMovingToRight( void )
 	}
 	else
 	{
-		return true;
+		return false;
 	}
 }
 

@@ -29,8 +29,6 @@
 // RAVEN END
 
 
-
-
 idCVar net_predictionErrorDecay( "net_predictionErrorDecay", "112", CVAR_FLOAT | CVAR_GAME | CVAR_NOCHEAT, "time in milliseconds it takes to fade away prediction errors", 0.0f, 200.0f );
 idCVar net_showPredictionError( "net_showPredictionError", "-1", CVAR_INTEGER | CVAR_GAME | CVAR_NOCHEAT, "show prediction errors for the given client", -1, MAX_CLIENTS );
 
@@ -338,7 +336,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	// health/armor
 	maxHealth		= dict.GetInt( "maxhealth", "100" );
 	armor			= dict.GetInt( "armor", "50" );
-	maxarmor		= dict.GetInt( "maxarmor", "100" );
+	maxarmor		= dict.GetInt( "maxarmor", "0" );
 
 	// ammo
 	for( i = 0; i < MAX_AMMOTYPES; i++ ) {
@@ -1078,30 +1076,30 @@ idPlayer::idPlayer
 */
 idPlayer::idPlayer() {
 	memset( &usercmd, 0, sizeof( usercmd ) );
-
+	gameLocal.Printf("Ran idPlayer \n");
 	alreadyDidTeamAnnouncerSound = false;
 
 	doInitWeapon			= false;
 	noclip					= false;
 	godmode					= false;
 	undying					= g_forceUndying.GetBool() ? !gameLocal.isMultiplayer : false;
-
+	gold = 0;
 	spawnAnglesSet			= false;
 	spawnAngles				= ang_zero;
 	viewAngles				= ang_zero;
 	deltaViewAngles			= ang_zero;
 	cmdAngles				= ang_zero;
-
+	addedHealth = 0;
 	demoViewAngleTime		= 0;
 	demoViewAngles			= ang_zero;
-
+	xp = 0;
 	oldButtons				= 0;
 	buttonMask				= 0;
 	oldFlags				= 0;
-
+	lvl = 0;
 	lastHitTime				= 0;
 	lastSavingThrowTime		= 0;
-
+	protectionValue = 1;
 	weapon					= NULL;
 
 	hud						= NULL;
@@ -1341,7 +1339,7 @@ idPlayer::idPlayer() {
 	teamAmmoRegen			= NULL;
 	teamAmmoRegenPending	= false;
 	teamDoubler			= NULL;		
-	teamDoublerPending		= false;
+	teamDoublerPending		= false; 
 }
 
 /*
@@ -1351,6 +1349,39 @@ idPlayer::SetShowHud
 */
 void idPlayer::SetShowHud( bool showHud )	{
 	disableHud = !showHud;
+}
+
+// new code
+void idPlayer::gotKill() {
+
+	int remainingxp;
+	xp += 10;
+	gold += (rand() % 20) + 1;
+
+	if (xp >= 10 + (14 * lvl)) {
+		remainingxp = xp - (10 + (14 * lvl));
+		lvl++;
+		addedHealth += 10;
+		xp = remainingxp; 
+		inventory.maxHealth = 100 + addedHealth;
+		Event_SetHealth(inventory.maxHealth);
+	}
+
+	gameLocal.Printf("%i %i %i %i \n", xp, lvl, inventory.maxHealth, gold);
+
+}
+
+void idPlayer::itemEquip(int num) {
+	switch (num) {
+	case 0: protectionValue = 2;
+		break;
+	case 1: protectionValue = 3;
+		break;
+	case 2: protectionValue = 5;
+		break;
+	case 3: protectionValue = 10;
+		break;
+	}
 }
 
 /*
@@ -3392,6 +3423,11 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	
 	assert ( _hud );
 
+	_hud->SetStateInt("boss_maxhealth", (lvl*14) + 10);
+	_hud->HandleNamedEvent("showBossBar");
+	_hud->SetStateInt("boss_health", xp);
+	_hud->HandleNamedEvent("updateBossBar");
+
 	temp = _hud->State().GetInt ( "player_health", "-1" );
 	if ( temp != health ) {		
 		_hud->SetStateInt   ( "player_healthDelta", temp == -1 ? 0 : (temp - health) );
@@ -3401,23 +3437,26 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 		
 	temp = _hud->State().GetInt ( "player_armor", "-1" );
-	if ( temp != inventory.armor ) {
-		_hud->SetStateInt ( "player_armorDelta", temp == -1 ? 0 : (temp - inventory.armor) );
-		_hud->SetStateInt ( "player_armor", inventory.armor );
-		_hud->SetStateFloat	( "player_armorpct", idMath::ClampFloat ( 0.0f, 1.0f, (float)inventory.armor / (float)inventory.maxarmor ) );
+	if ( temp != xp ) {
+		_hud->SetStateInt ( "player_armorDelta", temp == -1 ? 0 : (temp - lvl) );
+		_hud->SetStateInt ( "player_armor", lvl );
+		_hud->SetStateFloat	( "player_armorpct", idMath::ClampFloat ( 0.0f, 1.0f, (float)lvl / (float)(20) ) );
 		_hud->HandleNamedEvent ( "updateArmor" );
 	}
 	
 	// Boss bar
-	if ( _hud->State().GetInt ( "boss_health", "-1" ) != (bossEnemy ? bossEnemy->health : -1) ) {
-		if ( !bossEnemy || bossEnemy->health <= 0 ) {
+	if (_hud->State().GetInt("boss_health", "-1") != (bossEnemy ? xp : -1)) {
+
+		if (lvl == 0) {
 			bossEnemy = NULL;
-			_hud->SetStateInt ( "boss_health", -1 );
-			_hud->HandleNamedEvent ( "hideBossBar" );			
- 			_hud->HandleNamedEvent ( "hideBossShieldBar" ); // grrr, for boss buddy..but maybe other bosses will have shields?
-		} else {			
-			_hud->SetStateInt ( "boss_health", bossEnemy->health );
-			_hud->HandleNamedEvent ( "updateBossBar" );
+			_hud->SetStateInt("boss_health", -1);
+			_hud->HandleNamedEvent("hideBossBar");
+			_hud->HandleNamedEvent("hideBossShieldBar"); // grrr, for boss buddy..but maybe other bosses will have shields?
+		}
+		else {
+			_hud->HandleNamedEvent("showBossBar");
+			_hud->SetStateInt("boss_health", xp);
+			_hud->HandleNamedEvent("updateBossBar");
 		}
 	}
 		
@@ -3451,8 +3490,8 @@ void idPlayer::UpdateHudWeapon( int displayWeapon ) {
 		return;
 	}
 	
-	int index = 0;
-	int idealIndex = 0;
+	int index = lvl;
+	int idealIndex = lvl;
 	idUserInterface * hud = idPlayer::hud;
 	idUserInterface * mphud = idPlayer::mphud;
 	idUserInterface * cursor = idPlayer::cursor;
@@ -3500,7 +3539,7 @@ void idPlayer::UpdateHudWeapon( int displayWeapon ) {
 				
 				hud->SetStateInt	( va("weapon%d_index", i ), index++ );
 				hud->SetStateString ( va("weapon%d_icon", i ), weaponIcon );
-				hud->SetStateInt	( va("weapon%d_ammo", i ), inventory.ammo[inventory.AmmoIndexForWeaponClass ( weap ) ] );				
+				hud->SetStateInt	( va("weapon%d_ammo", i ), lvl);				
 			}
 		} else {
 			hud->SetStateBool( weapnum, false );
@@ -3690,14 +3729,15 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 		}
 		_hud = GetHud();
 		// Boss bar
-		if ( _hud && _hud->State().GetInt( "boss_health", "-1" ) != (bossEnemy ? bossEnemy->health : -1) ) {
-			if ( !bossEnemy || bossEnemy->health <= 0 ) {
+		if ( _hud && _hud->State().GetInt( "boss_health", "-1" ) != (bossEnemy ? xp : -1) ) {
+			if ( lvl == 0 ) {
 				bossEnemy = NULL;
 				_hud->SetStateInt( "boss_health", -1 );
 				_hud->HandleNamedEvent( "hideBossBar" );			
  				_hud->HandleNamedEvent( "hideBossShieldBar" ); // grrr, for boss buddy..but maybe other bosses will have shields?
 			} else {			
-				_hud->SetStateInt( "boss_health", bossEnemy->health );
+				_hud->HandleNamedEvent("showBossBar");
+				_hud->SetStateInt( "boss_health", xp );
 				_hud->HandleNamedEvent( "updateBossBar" );
 			}
 		}
@@ -8407,11 +8447,11 @@ bool idPlayer::AttemptToBuyItem( const char* itemName )
 }
 
 bool idPlayer::CanBuy( void ) {
-	bool ret = gameLocal.mpGame.IsBuyingAllowedRightNow();
+	bool ret = true;
 	if ( !ret ) {
-		return false;
+		return true;
 	}
-	return !spectating;
+	return true;
 }
 
 
@@ -10263,7 +10303,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 
 		int oldHealth = health;
-		health -= damage;
+		health -= damage/protectionValue;
 
 		GAMELOG_ADD ( va("player%d_damage_taken", entityNumber ), damage );
 		GAMELOG_ADD ( va("player%d_damage_%s", entityNumber, damageDefName), damage );
@@ -13071,7 +13111,7 @@ void idPlayer::StartBossBattle ( idEntity* enemy ) {
 	bossEnemy = enemy;
 	idUserInterface *hud_ = GetHud();
 	if ( hud_ ) {
-		hud_->SetStateInt ( "boss_maxhealth", enemy->health );
+		hud_->SetStateInt ( "boss_maxhealth", 20 );
 		hud_->HandleNamedEvent ( "showBossBar" );
 	}
 }

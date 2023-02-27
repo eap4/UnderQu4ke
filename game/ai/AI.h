@@ -107,6 +107,7 @@ typedef enum {
 	AIMOVESPEED_DEFAULT,			// Choose run/walk depending on situation
 	AIMOVESPEED_RUN,				// Always run
 	AIMOVESPEED_WALK,				// alwasy walk
+	AIMOVESPEED_NONE
 } aiMoveSpeed_t;
 
 typedef struct rvAIFuncs_s {

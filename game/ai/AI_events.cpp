@@ -1044,6 +1044,11 @@ void idAI::Event_SetMoveSpeed ( int speed ) {
 			move.fl.noRun = true;
 			move.fl.noWalk = false;
 			break;
+
+		case AIMOVESPEED_NONE:
+			move.fl.noRun = true;
+			move.fl.noWalk = true;
+			break;
 	}
 }
 

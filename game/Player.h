@@ -290,20 +290,21 @@ public:
 	bool					noclip;
 	bool					godmode;
 	int						godmodeDamage;
-	bool					undying;
-
+	bool					undying; 
+	int						gold;
 	bool					spawnAnglesSet;		// on first usercmd, we must set deltaAngles
 	idAngles				spawnAngles;
 	idAngles				viewAngles;			// player view angles
 	idAngles				cmdAngles;			// player cmd angles
-
+	int						xp, lvl;
 	int						buttonMask;
 	int						oldButtons;
 	int						oldFlags;
-
+	int						addedHealth;
 	int						lastHitTime;			// last time projectile fired by player hit target
 	int						lastSavingThrowTime;	// for the "free miss" effect
-
+	void					gotKill(void);
+	void					itemEquip(int);
 	struct playerFlags_s {
 		bool		forward			:1;
 		bool		backward		:1;
@@ -328,7 +329,7 @@ public:
 		bool		objectiveFailed	:1;
 		bool		noFallingDamage :1;
 	} pfl;
-		
+	int						protectionValue;
 	// inventory
 	idInventory				inventory;
 
@@ -1153,7 +1154,7 @@ private:
 	stateResult_t			State_Legs_Fall					( const stateParms_t& parms );
 	stateResult_t			State_Legs_Land					( const stateParms_t& parms );
 	stateResult_t			State_Legs_Dead					( const stateParms_t& parms );
-	
+
  	CLASS_STATES_PROTOTYPE( idPlayer );
 };
 

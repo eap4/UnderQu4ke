@@ -1613,6 +1613,10 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	idAngles			ang;
 	const char*			modelDeath;
 	const idKeyValue*	kv;
+	idPlayer* player = gameLocal.GetLocalPlayer();
+
+	gameLocal.Printf("got here \n");
+	player->gotKill();
 	
 	if ( g_debugDamage.GetBool() ) {
 		gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
@@ -2086,7 +2090,14 @@ void idAI::UpdateEnemy ( void ) {
 	enemy.range	  = DistanceTo ( enemy.lastKnownPosition );
 	enemy.range2d = DistanceTo2d ( enemy.lastKnownPosition );
 
-	// Calulcate the aggression scale
+	gameLocal.Printf("%f \n", enemy.range);
+
+	if (enemy.range < 100) {
+		gameLocal.Printf("In if");
+		Event_StopThinking();
+	}
+
+	// Calulcate the aggression scale 
 	// Skill level 0: (1.0)
 	// Skill level 1: (1.0 - 1.25)
 	// Skill level 2: (1.0 - 1.5)
