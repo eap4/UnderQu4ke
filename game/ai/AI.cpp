@@ -2090,9 +2090,10 @@ void idAI::UpdateEnemy ( void ) {
 	enemy.range	  = DistanceTo ( enemy.lastKnownPosition );
 	enemy.range2d = DistanceTo2d ( enemy.lastKnownPosition );
 
-	gameLocal.Printf("%f \n", enemy.range);
-
 	if (enemy.range < 100) {
+		idPlayer* player = gameLocal.GetLocalPlayer();
+		idAI* ai = this;
+		player->combatBegin(ai);
 		gameLocal.Printf("In if");
 		Event_StopThinking();
 	}

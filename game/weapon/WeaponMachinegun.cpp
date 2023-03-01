@@ -224,15 +224,32 @@ stateResult_t rvWeaponMachinegun::State_Fire ( const stateParms_t& parms ) {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			if ( wsfl.zoom ) {
 				nextAttackTime = gameLocal.time + (altFireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-				Attack ( true, 1, spreadZoom, 0, 1.0f );
+				Attack ( true, 0, spreadZoom, 0, 1.0f );
+				if (player->protectionValue != 2) {
+					player->protectionValue == 2;
+					player->protectionDiv == 1;
+				}
+				else {
+					player->protectionValue == 0;
+				}
+				gameLocal.Printf("%i \n", player->protectionValue);
 				fireHeld = true;
 			} else {
 				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-				Attack ( false, 1, spread, 0, 1.0f );
+				Attack ( false, 0, spread, 0, 1.0f );
+				if (player->protectionValue != 2) {
+					player->protectionValue = 2;
+					player->protectionDiv = 1;
+				}
+				else {
+					player->protectionValue = 0;
+				}
+				gameLocal.Printf("%i \n", player->protectionValue);
 			}
 			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );

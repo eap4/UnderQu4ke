@@ -296,7 +296,7 @@ public:
 	idAngles				spawnAngles;
 	idAngles				viewAngles;			// player view angles
 	idAngles				cmdAngles;			// player cmd angles
-	int						xp, lvl;
+	int						xp, lvl, turn;
 	int						buttonMask;
 	int						oldButtons;
 	int						oldFlags;
@@ -304,7 +304,9 @@ public:
 	int						lastHitTime;			// last time projectile fired by player hit target
 	int						lastSavingThrowTime;	// for the "free miss" effect
 	void					gotKill(void);
-	void					itemEquip(int);
+	void					combatBegin(idAI*);
+	void					commbatTurn(int);
+	idAI*					enemy;
 	struct playerFlags_s {
 		bool		forward			:1;
 		bool		backward		:1;
@@ -330,6 +332,9 @@ public:
 		bool		noFallingDamage :1;
 	} pfl;
 	int						protectionValue;
+	int						protectionDiv;
+	int						attackValue;
+	bool					inFight;
 	// inventory
 	idInventory				inventory;
 

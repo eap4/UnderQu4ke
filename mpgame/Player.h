@@ -590,6 +590,7 @@ public:
 	bool					AttemptToBuyTeamPowerup( const char* itemName );
 	void					UpdateTeamPowerups( bool isBuying = false );
 	bool					CanBuy( void );
+	void					combatBegin(void);
 	int						CanSelectWeapon				( const char* weaponName );
 	int						GetItemCost(const char* itemName);
 	void					PerformImpulse( int impulse );

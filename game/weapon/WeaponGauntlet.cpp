@@ -212,6 +212,7 @@ void rvWeaponGauntlet::Attack ( void ) {
 	// Cast a ray out to the lock range
 // RAVEN BEGIN
 // ddynerman: multiple clip worlds
+
 	gameLocal.TracePoint(	owner, tr, 
 							playerViewOrigin, 
 							playerViewOrigin + playerViewAxis[0] * range, 

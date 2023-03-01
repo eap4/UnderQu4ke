@@ -1062,7 +1062,7 @@ bool idInventory::UseAmmo( int index, int amount ) {
 
 	// take an ammo away if not infinite
 	if ( ammo[ index ] >= 0 ) {
-		ammo[ index ] -= amount;
+		ammo[ index ] = amount;
  		ammoPredictTime = gameLocal.time; // mp client: we predict this. mark time so we're not confused by snapshots
 	}
 
@@ -1099,7 +1099,10 @@ idPlayer::idPlayer() {
 	lvl = 0;
 	lastHitTime				= 0;
 	lastSavingThrowTime		= 0;
-	protectionValue = 1;
+	protectionValue = 0;
+	attackValue = 0;
+	protectionDiv = 1;
+	inFight = false;
 	weapon					= NULL;
 
 	hud						= NULL;
@@ -1371,16 +1374,42 @@ void idPlayer::gotKill() {
 
 }
 
-void idPlayer::itemEquip(int num) {
-	switch (num) {
-	case 0: protectionValue = 2;
-		break;
-	case 1: protectionValue = 3;
-		break;
-	case 2: protectionValue = 5;
-		break;
-	case 3: protectionValue = 10;
-		break;
+void idPlayer::combatBegin(idAI* ai) {
+	inFight = true;
+	enemy = ai;
+	commbatTurn(0);
+}
+
+void idPlayer::commbatTurn(int turn) {
+	if (!enemy) {
+		gameLocal.Printf("pointer is Null you fucking idiot");
+		return;
+	}
+	if (turn == 0) {
+		
+		enemy->AdjustHealthByDamage(100);
+		gameLocal.Printf("%i \n", enemy->health);
+	}
+	else {
+		health = health - (10 - protectionValue) / protectionDiv;
+	}
+	if (enemy->health <= 0) {
+		idVec3 vec;
+		idPlayer* player;
+		enemy->Killed(player, player, 100, vec, 0);
+		inFight = false;
+		return;
+	}
+	if (health <= 0) {
+		inFight = false;
+		return;
+	}
+
+	if (turn == 0) {
+		commbatTurn(1);
+	}
+	else {
+		commbatTurn(0);
 	}
 }
 
@@ -10303,7 +10332,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 
 		int oldHealth = health;
-		health -= damage/protectionValue;
+		health -= damage;
 
 		GAMELOG_ADD ( va("player%d_damage_taken", entityNumber ), damage );
 		GAMELOG_ADD ( va("player%d_damage_%s", entityNumber, damageDefName), damage );
