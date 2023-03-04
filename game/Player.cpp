@@ -1061,8 +1061,8 @@ bool idInventory::UseAmmo( int index, int amount ) {
 	}
 
 	// take an ammo away if not infinite
-	if ( ammo[ index ] >= 0 ) {
-		ammo[ index ] = amount;
+	if ( ammo[ index ] >= 1 ) {
+		ammo[ index ] -= amount;
  		ammoPredictTime = gameLocal.time; // mp client: we predict this. mark time so we're not confused by snapshots
 	}
 
@@ -1097,6 +1097,7 @@ idPlayer::idPlayer() {
 	buttonMask				= 0;
 	oldFlags				= 0;
 	lvl = 0;
+	timefunc = -9999999999999999999;
 	lastHitTime				= 0;
 	lastSavingThrowTime		= 0;
 	protectionValue = 0;
@@ -1377,40 +1378,29 @@ void idPlayer::gotKill() {
 void idPlayer::combatBegin(idAI* ai) {
 	inFight = true;
 	enemy = ai;
-	commbatTurn(0);
 }
 
 void idPlayer::commbatTurn(int turn) {
-	if (!enemy) {
-		gameLocal.Printf("pointer is Null you fucking idiot");
-		return;
-	}
 	if (turn == 0) {
 		
 		enemy->AdjustHealthByDamage(100);
 		gameLocal.Printf("%i \n", enemy->health);
 	}
-	else {
-		health = health - (10 - protectionValue) / protectionDiv;
-	}
+
+	timefunc = gameLocal.GetTime() + 3000;
+	gameLocal.Printf("%i \n", timefunc);
+	
 	if (enemy->health <= 0) {
 		idVec3 vec;
 		idPlayer* player;
 		enemy->Killed(player, player, 100, vec, 0);
 		inFight = false;
-		return;
 	}
 	if (health <= 0) {
 		inFight = false;
-		return;
 	}
 
-	if (turn == 0) {
-		commbatTurn(1);
-	}
-	else {
-		commbatTurn(0);
-	}
+	return;
 }
 
 /*
@@ -2980,7 +2970,7 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 		{
 			if( inventory.weapons & ( 1 << weaponIndex ) )
 			{
-				int ammoIndex	= inventory.AmmoIndexForWeaponIndex( weaponIndex );
+				int ammoIndex	=- inventory.AmmoIndexForWeaponIndex( weaponIndex );
 				inventory.ammo[ ammoIndex ] = inventory.StartingAmmoForWeaponIndex( weaponIndex );
 			}
 		}
@@ -9353,7 +9343,16 @@ Called every tic for each player
 */
 void idPlayer::Think( void ) {
 	renderEntity_t *headRenderEnt;
- 
+
+	//turn based damgae based off time 
+	int time = -gameLocal.GetTime();
+	if (-timefunc > time) {
+		gameLocal.Printf("kdjakdjaslkjd");
+		idPlayer* player = gameLocal.GetLocalPlayer();
+		player->health = player->health - 10;
+		timefunc = -9999999999999999999;
+	}
+
 	if ( talkingNPC ) {
 		if ( !talkingNPC.IsValid() ) {
 			talkingNPC = NULL;

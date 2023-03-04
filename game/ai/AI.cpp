@@ -2089,9 +2089,8 @@ void idAI::UpdateEnemy ( void ) {
 	// Update enemy range
 	enemy.range	  = DistanceTo ( enemy.lastKnownPosition );
 	enemy.range2d = DistanceTo2d ( enemy.lastKnownPosition );
-
-	if (enemy.range < 100) {
-		idPlayer* player = gameLocal.GetLocalPlayer();
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	if (enemy.range < 100 && player->inFight == false) {
 		idAI* ai = this;
 		player->combatBegin(ai);
 		gameLocal.Printf("In if");

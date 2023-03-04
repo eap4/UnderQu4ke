@@ -432,6 +432,10 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 				PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );
 			} else {
 				Attack ( false, 1, spread, 0, 1.0f );
+				idPlayer* player1 = gameLocal.GetLocalPlayer();
+				if (player1->inFight == true) {
+					player1->commbatTurn(0);
+				}
 				PlayEffect ( "fx_normalflash", barrelJointView, false );
 				PlayAnim( ANIMCHANNEL_ALL, "fire", parms.blendFrames );
 

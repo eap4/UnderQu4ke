@@ -296,7 +296,7 @@ public:
 	idAngles				spawnAngles;
 	idAngles				viewAngles;			// player view angles
 	idAngles				cmdAngles;			// player cmd angles
-	int						xp, lvl, turn;
+	int						xp, lvl, turn, timefunc;
 	int						buttonMask;
 	int						oldButtons;
 	int						oldFlags;

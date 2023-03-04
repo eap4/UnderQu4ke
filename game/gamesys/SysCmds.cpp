@@ -408,131 +408,150 @@ void GiveStuffToPlayer( idPlayer* player, const char* name, const char* value )
 	int			i;
 	bool		give_all;
 //	idPlayer* player = gameLocal.GetLocalPlayer();
+	char first = *name;
+	char second = *value;
+	if (second == '&') {
+		switch (first) {
+		case 'l':
+			if (player->gold >= 50) {
+				player->gold -= 50;
+				player->GiveItem("weapon_machinegun");
+				gameLocal.Printf("Bought light armor for 50 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 50 gold. Current gold: %i \n", player->gold);
+			}
+		}
 
-	if( !player || !name )	{
-		return;
 	}
+	else {
+		if (!player || !name) {
+			return;
+		}
 
-	if( !value ) {
-		value = "";
-	}
+		if (!value) {
+			value = "";
+		}
 
-	if ( idStr::Icmp( name, "all" ) == 0 ) {
-		give_all = true;
-	} else {
-		give_all = false;
-	}
+		if (idStr::Icmp(name, "all") == 0) {
+			give_all = true;
+		}
+		else {
+			give_all = false;
+		}
 
-	if ( give_all || ( idStr::Cmpn( name, "weapon", 6 ) == 0 ) ) {
-		if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
-			gameLocal.world->spawnArgs.SetBool( "no_Weapons", false );
-			for( i = 0; i < gameLocal.numClients; i++ ) {
-				if ( gameLocal.entities[ i ] ) {
-					gameLocal.entities[ i ]->PostEventSec( &EV_Player_SelectWeapon, 0.5f, gameLocal.entities[ i ]->spawnArgs.GetString( "def_weapon1" ) );
+		if (give_all || (idStr::Cmpn(name, "weapon", 6) == 0)) {
+			if (gameLocal.world->spawnArgs.GetBool("no_Weapons")) {
+				gameLocal.world->spawnArgs.SetBool("no_Weapons", false);
+				for (i = 0; i < gameLocal.numClients; i++) {
+					if (gameLocal.entities[i]) {
+						gameLocal.entities[i]->PostEventSec(&EV_Player_SelectWeapon, 0.5f, gameLocal.entities[i]->spawnArgs.GetString("def_weapon1"));
+					}
 				}
 			}
 		}
-	}
 
-	if ( ( idStr::Cmpn( name, "weapon_", 7 ) == 0 ) || ( idStr::Cmpn( name, "item_", 5 ) == 0 ) || ( idStr::Cmpn( name, "ammo_", 5 ) == 0 ) || ( idStr::Icmp( name, "ammorefill" ) == 0 ) ) {
-		player->GiveItem( name );
-		return;
-	}
-
-	if ( give_all || idStr::Icmp( name, "health" ) == 0 )	{
-		player->health = player->inventory.maxHealth;
-		if ( player->IsInVehicle() ) {
-			player->GetVehicleController().Give ( "health", "9999" );
-		}
-		if ( !give_all ) {
+		if ((idStr::Cmpn(name, "weapon_", 7) == 0) || (idStr::Cmpn(name, "item_", 5) == 0) || (idStr::Cmpn(name, "ammo_", 5) == 0) || (idStr::Icmp(name, "ammorefill") == 0)) {
+			player->GiveItem(name);
 			return;
 		}
-	}
 
-	if ( give_all || idStr::Icmp( name, "weapons" ) == 0 ) {
-		player->inventory.weapons = BIT( MAX_WEAPONS ) - 1;
-		player->CacheWeapons();
+		if (give_all || idStr::Icmp(name, "health") == 0) {
+			player->health = player->inventory.maxHealth;
+			if (player->IsInVehicle()) {
+				player->GetVehicleController().Give("health", "9999");
+			}
+			if (!give_all) {
+				return;
+			}
+		}
 
-		if ( !give_all ) {
+		if (give_all || idStr::Icmp(name, "weapons") == 0) {
+			player->inventory.weapons = BIT(MAX_WEAPONS) - 1;
+			player->CacheWeapons();
+
+			if (!give_all) {
+				return;
+			}
+		}
+
+		if (give_all || idStr::Icmp(name, "ammo") == 0) {
+			// RAVEN BEGIN
+			// bdube: define changed
+			for (i = 0; i < MAX_AMMOTYPES; i++) {
+				player->inventory.ammo[i] = player->inventory.MaxAmmoForAmmoClass(player, rvWeapon::GetAmmoNameForIndex(i));
+				// RAVEN END		
+			}
+			if (!give_all) {
+				return;
+			}
+		}
+
+		if (give_all || idStr::Icmp(name, "armor") == 0) {
+			player->inventory.armor = player->inventory.maxarmor;
+			if (!give_all) {
+				return;
+			}
+		}
+		// RAVEN BEGIN
+		if (idStr::Icmp(name, "quad") == 0) {
+			player->GivePowerUp(POWERUP_QUADDAMAGE, SEC2MS(30.0f));
 			return;
 		}
-	}
 
-	if ( give_all || idStr::Icmp( name, "ammo" ) == 0 ) {
-// RAVEN BEGIN
-// bdube: define changed
-		for ( i = 0 ; i < MAX_AMMOTYPES; i++ ) {
-			player->inventory.ammo[ i ] = player->inventory.MaxAmmoForAmmoClass( player, rvWeapon::GetAmmoNameForIndex( i ) );
-// RAVEN END		
-		}
-		if ( !give_all ) {
+		if (idStr::Icmp(name, "invis") == 0) {
+			player->GivePowerUp(POWERUP_INVISIBILITY, SEC2MS(30.0f));
 			return;
 		}
-	}
 
-	if ( give_all || idStr::Icmp( name, "armor" ) == 0 ) {
-		player->inventory.armor = player->inventory.maxarmor;
-		if ( !give_all ) {
+		if (idStr::Icmp(name, "regen") == 0) {
+			player->GivePowerUp(POWERUP_REGENERATION, SEC2MS(30.0f));
 			return;
 		}
-	}
-// RAVEN BEGIN
-	if (idStr::Icmp(name, "quad") == 0) {
-		player->GivePowerUp( POWERUP_QUADDAMAGE, SEC2MS( 30.0f ) );
-		return;
-	}
 
-	if ( idStr::Icmp( name, "invis" ) == 0 ) {
-		player->GivePowerUp( POWERUP_INVISIBILITY, SEC2MS( 30.0f ) );
-		return;
-	}
+		if (idStr::Icmp(name, "haste") == 0) {
+			player->GivePowerUp(POWERUP_HASTE, SEC2MS(30.0f));
+			return;
+		}
 
-	if ( idStr::Icmp( name, "regen" ) == 0 ) {
-		player->GivePowerUp( POWERUP_REGENERATION, SEC2MS( 30.0f ) );
-		return;
-	}
+		if (idStr::Icmp(name, "ammoregen") == 0) {
+			player->GivePowerUp(POWERUP_AMMOREGEN, -1);
+			return;
+		}
 
-	if ( idStr::Icmp( name, "haste" ) == 0 ) {
-		player->GivePowerUp( POWERUP_HASTE, SEC2MS( 30.0f ) );
-		return;
-	}
+		if (idStr::Icmp(name, "scout") == 0) {
+			player->GivePowerUp(POWERUP_SCOUT, -1);
+			return;
+		}
 
-	if (idStr::Icmp(name, "ammoregen") == 0) {
-		player->GivePowerUp( POWERUP_AMMOREGEN, -1 );
-		return;
-	}
-	
-	if (idStr::Icmp(name, "scout") == 0) {
-		player->GivePowerUp( POWERUP_SCOUT, -1 );
-		return;
-	}
+		if (idStr::Icmp(name, "doubler") == 0) {
+			player->GivePowerUp(POWERUP_DOUBLER, -1);
+			return;
+		}
 
-	if (idStr::Icmp(name, "doubler") == 0) {
-		player->GivePowerUp( POWERUP_DOUBLER, -1 );
-		return;
-	}
+		if (idStr::Icmp(name, "guard") == 0) {
+			player->GivePowerUp(POWERUP_GUARD, -1);
+			return;
+		}
+		// RAVEN END
 
-	if (idStr::Icmp(name, "guard") == 0) {
-		player->GivePowerUp( POWERUP_GUARD, -1 );
-		return;
-	}
-// RAVEN END
+		if (!idStr::Icmp(name, "wpmod_all")) {
+			player->GiveWeaponMods(0xFFFFFFFF);
+			return;
+		}
+		else if (!idStr::Cmpn(name, "wpmod_", 6)) {
+			player->GiveWeaponMod(name);
+			return;
+		}
 
-	if ( !idStr::Icmp ( name, "wpmod_all" ) ) {
-		player->GiveWeaponMods ( 0xFFFFFFFF );
-		return;
-	} else if ( !idStr::Cmpn( name, "wpmod_", 6 ) ) {
-		player->GiveWeaponMod(name);
-		return;
-	}
+		if (!idStr::Cmpn(name, "stroggmod_", 10)) {
+			player->Give(name, "");
+			return;
+		}
 
-	if ( !idStr::Cmpn( name, "stroggmod_", 10 ) ) {
-		player->Give ( name, "" );
-		return;
-	}
-
-	if ( !give_all && !player->Give( name, value ) ) {
-		gameLocal.Printf( "unknown item\n" );
+		if (!give_all && !player->Give(name, value)) {
+			gameLocal.Printf("unknown item\n");
+		}
 	}
 }
 
@@ -2932,12 +2951,8 @@ void Cmd_ToggleBuyMenu_f( const idCmdArgs& args ) {
 
 void Cmd_BuyItem_f( const idCmdArgs& args ) {
 	idPlayer* player = gameLocal.GetLocalPlayer();
-	if ( !player ) {
-		common->Printf( "ERROR: Cmd_BuyItem_f() failed, since GetLocalPlayer() was NULL.\n", player );
-		return;
-	}
-
-	player->GenerateImpulseForBuyAttempt( args.Argv(1) );
+	
+	GiveStuffToPlayer(player, args.Argv(1), "&");
 }
 // RITUAL END
 
