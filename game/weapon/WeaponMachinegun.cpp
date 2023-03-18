@@ -231,13 +231,14 @@ stateResult_t rvWeaponMachinegun::State_Fire ( const stateParms_t& parms ) {
 				nextAttackTime = gameLocal.time + (altFireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 				Attack ( true, 0, spreadZoom, 0, 1.0f );
 				if (player->protectionValue != 2) {
-					player->protectionValue == 2;
-					player->protectionDiv == 1;
+					player->protectionValue = 2;
+					player->protectionDiv = 1;
+					gameLocal.Printf("Equipped light armor, damage reduced by %i \n", player->protectionValue);
 				}
 				else {
-					player->protectionValue == 0;
+					player->protectionValue = 0;
+					gameLocal.Printf("Unequipped light armor, damage reduced by %i \n", player->protectionValue);
 				}
-				gameLocal.Printf("%i \n", player->protectionValue);
 				fireHeld = true;
 			} else {
 				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
@@ -245,14 +246,15 @@ stateResult_t rvWeaponMachinegun::State_Fire ( const stateParms_t& parms ) {
 				if (player->protectionValue != 2) {
 					player->protectionValue = 2;
 					player->protectionDiv = 1;
+					gameLocal.Printf("Equipped light armor, damage reduced by %i \n", player->protectionValue);
 				}
 				else {
 					player->protectionValue = 0;
+					gameLocal.Printf("Unequipped light armor, damage reduced by %i \n", player->protectionValue);
 				}
-				gameLocal.Printf("%i \n", player->protectionValue);
 			}
 			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );	
-			return SRESULT_STAGE ( STAGE_WAIT );
+			return SRESULT_STAGE ( STAGE_WAIT ); 
 	
 		case STAGE_WAIT:		
 			if ( !fireHeld && wsfl.attack && gameLocal.time >= nextAttackTime && AmmoInClip() && !wsfl.lowerWeapon ) {

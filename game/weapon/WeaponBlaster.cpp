@@ -402,6 +402,7 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 		FIRE_INIT,
 		FIRE_WAIT,
 	};	
+	idPlayer* player1 = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case FIRE_INIT:	
 
@@ -425,17 +426,26 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 			}
 
 
-	
+
 			if ( gameLocal.time - fireHeldTime > chargeTime ) {	
-				Attack ( true, 1, spread, 0, 1.0f );
+				if (player1->inFight == true && player1->isturn == 0) {
+					Attack(true, 1, spread, 0, 1.0f);
+					player1->commbatTurn(1);
+				}
+				else {
+					Attack(true, 1, spread, 0, 1.0f);
+				}
 				PlayEffect ( "fx_chargedflash", barrelJointView, false );
 				PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );
 			} else {
-				Attack ( false, 1, spread, 0, 1.0f );
-				idPlayer* player1 = gameLocal.GetLocalPlayer();
-				if (player1->inFight == true) {
+				if (player1->inFight == true && player1->isturn == 0) {
+					Attack ( false, 1, spread, 0, 1.0f );
 					player1->commbatTurn(0);
+				} 
+				else {
+					Attack(false, 0, spread, 0, 1.0f);
 				}
+
 				PlayEffect ( "fx_normalflash", barrelJointView, false );
 				PlayAnim( ANIMCHANNEL_ALL, "fire", parms.blendFrames );
 

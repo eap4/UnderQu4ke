@@ -815,12 +815,19 @@ stateResult_t rvWeaponLightningGun::State_Fire( const stateParms_t& parms ) {
 		STAGE_DONE,
 		STAGE_DONEWAIT
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			StartSound( "snd_fire", SND_CHANNEL_WEAPON, 0, false, NULL );
 			StartSound( "snd_fire_stereo", SND_CHANNEL_ITEM, 0, false, NULL );
 			StartSound( "snd_fire_loop", SND_CHANNEL_BODY2, 0, false, NULL );
 			
+			player->powerupatt = 50;
+			player->powerupdef = 5;
+			player->poweruptime = gameLocal.GetTime() + 30001;
+			player->StartPowerUpEffect(2);
+			gameLocal.Printf("Powerup Activated\n");
+
 			viewModel->SetShaderParm( 6, 0 );
 
 			viewModel->PlayEffect( "fx_spire", spireJointView, true );

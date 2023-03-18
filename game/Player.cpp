@@ -1097,7 +1097,18 @@ idPlayer::idPlayer() {
 	buttonMask				= 0;
 	oldFlags				= 0;
 	lvl = 0;
+	shop = false;
+	bossatt = 0;
+	bossact = 0;
+	bossdef = 0;
+	bossgold = 0;
+	bossxp = 0;
+	actcount = 0;
+	hasStim = false;
 	timefunc = -9999999999999999999;
+	powerupatt = 0;
+	powerupdef = 0;
+	poweruptime = -9999999999999999999;
 	lastHitTime				= 0;
 	lastSavingThrowTime		= 0;
 	protectionValue = 0;
@@ -1358,46 +1369,149 @@ void idPlayer::SetShowHud( bool showHud )	{
 // new code
 void idPlayer::gotKill() {
 
-	int remainingxp;
-	xp += 10;
-	gold += (rand() % 20) + 1;
+	
+		int remainingxp;
+		xp += 10 + bossxp;
+		gold += (rand() % 20) + 1 + bossgold;
 
-	if (xp >= 10 + (14 * lvl)) {
-		remainingxp = xp - (10 + (14 * lvl));
-		lvl++;
-		addedHealth += 10;
-		xp = remainingxp; 
-		inventory.maxHealth = 100 + addedHealth;
-		Event_SetHealth(inventory.maxHealth);
-	}
-
-	gameLocal.Printf("%i %i %i %i \n", xp, lvl, inventory.maxHealth, gold);
+		while(xp >= 10 + (14 * lvl)) {
+			remainingxp = xp - (10 + (14 * lvl));
+			lvl++;
+			addedHealth += 10;
+			xp = remainingxp;
+			inventory.maxHealth = 100 + addedHealth;
+			Event_SetHealth(inventory.maxHealth);
+		}
+	
+	gameLocal.Printf("Killed enemy, xp: %i, lvl: %i, gold: %i \n", xp, lvl, gold);
 
 }
 
 void idPlayer::combatBegin(idAI* ai) {
+	gameLocal.Printf("Fight Start\n");
 	inFight = true;
 	enemy = ai;
+	isturn = 0;
+	const char* d = enemy->GetClassname();
+
+	if (strcmp(d, "rvMonsterGunner") == 0) {
+		gameLocal.Printf("BOSS FIGHT\n");
+		bossact = 0;
+		bossatt = 4;
+		bossdef = 20;
+		bossgold = 30;
+		bossxp = 30;
+		actcount = -2;
+	}
 }
 
 void idPlayer::commbatTurn(int turn) {
 	if (turn == 0) {
+		int att = (gameLocal.random.RandomInt() % 101) + 50 - bossdef + powerupatt + attackValue;
+		enemy->AdjustHealthByDamage(att);
+		gameLocal.Printf("Hit enemy for %i damage \n", att);
+	}
+	else if (turn == 1) {
+		int ran = (gameLocal.random.RandomInt() % (12 - bossact)) + 1;
+		switch (ran) {
+		case 1: gameLocal.Printf("You told Strogg that his tie matches his hair \n");
+			gameLocal.Printf("Strogg has no hair \n");
+			gameLocal.Printf("Act failed \n");
+			break;
+		case 2: gameLocal.Printf("You attempted to sell Strogg a piece of chocolate\n");
+			gameLocal.Printf("Chocolate? Did you say Chocolate?\n");
+			gameLocal.Printf("CHOCOLATE?\n");
+			gameLocal.Printf("CHOCOLATE!!! (act failed)\n");
+			break;
+		case 3: gameLocal.Printf("You tried to speak in Strogg's native language\n");
+			gameLocal.Printf("You insulted Strogg's mother\n");
+			gameLocal.Printf("Act Failed\n");
+			break;
+		case 4: gameLocal.Printf("You insulted Strogg's father\n");
+			gameLocal.Printf("Strogg hates his father\n");
+			gameLocal.Printf("Act Succeeded\n");
+			actcount++;
+			break;
+		case 5: gameLocal.Printf("You made a witty and original joke about the hit game Among Us\n");
+			gameLocal.Printf("Strogg has been living under a rock for the past 47 years so he actually finds your attempt at humor amusing\n");
+			gameLocal.Printf("Act Succeeded (but at what cost)\n");
+			actcount++;
+			break;
+		case 6: gameLocal.Printf("You hand Strogg a cat\n");
+			gameLocal.Printf(":3\n");
+			gameLocal.Printf("Act Succeeded\n");
+			actcount++;
+			break;
+		case 7: gameLocal.Printf("You asked Strogg if he was ok\n");
+			gameLocal.Printf("You have a serious talk with Strogg about feelings\n");
+			gameLocal.Printf("Act Succeeded\n");
+			actcount++;
+			break;
+		case 8: gameLocal.Printf("You informed Strogg that you are a CS student at NJIT\n");
+			gameLocal.Printf("Out of pity he gives you a free act\n");
+			gameLocal.Printf("Act Succeeded\n");
+			actcount++;
+			break;
+		case 9: gameLocal.Printf("You take Strogg to see an MCU movie to become friends\n");
+			gameLocal.Printf("It is mid\n");
+			gameLocal.Printf("Act Failed\n");
+			break;
+		default: gameLocal.Printf("Generic successful act\n");
+			gameLocal.Printf("Act Succeeded\n");
+			actcount++;
+			break;
+		}
 		
-		enemy->AdjustHealthByDamage(100);
-		gameLocal.Printf("%i \n", enemy->health);
+	}
+	else if (turn == 2) {
+
+		int newhealth = health + 20;
+		if ( (newhealth > inventory.maxHealth) && (health != inventory.maxHealth) ) {
+			health = inventory.maxHealth;
+		}
+		else if (health == inventory.maxHealth) {
+			gameLocal.Printf("Wasted stim \n");
+		}
+		else {
+			health += 20;
+		}
+	}
+	if ( enemy->health > 0 && actcount != 3) {
+		isturn = 1;
+		timefunc = gameLocal.GetTime() + 3000;
 	}
 
-	timefunc = gameLocal.GetTime() + 3000;
-	gameLocal.Printf("%i \n", timefunc);
-	
+	if (actcount == 3) {
+		enemy->health = 1; 
+		inFight = false;
+		gold += (rand() % 51) + 10 + bossgold;
+		actcount = 0;
+		gameLocal.Printf("Spared enemy, gold: %i \n", gold);
+		bossatt = 0;
+		bossdef = 0;
+		bossact = 0;
+		bossgold = 0;
+		bossxp = 0;
+	}
+
 	if (enemy->health <= 0) {
 		idVec3 vec;
 		idPlayer* player;
 		enemy->Killed(player, player, 100, vec, 0);
 		inFight = false;
+		bossatt = 0;
+		bossdef = 0;
+		bossact = 0;
+		bossgold = 0;
+		bossxp = 0;
 	}
 	if (health <= 0) {
 		inFight = false;
+		bossatt = 0;
+		bossact = 0;
+		bossdef = 0;
+		bossgold = 0;
+		bossxp = 0;
 	}
 
 	return;
@@ -1412,7 +1526,7 @@ bool idPlayer::GetShowHud( void )	{
 	return !disableHud;
 }
 
-/*
+/* 
 ==============
 idPlayer::SetWeapon
 ==============
@@ -3456,7 +3570,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 		
 	temp = _hud->State().GetInt ( "player_armor", "-1" );
-	if ( temp != xp ) {
+	if ( temp != lvl ) {
 		_hud->SetStateInt ( "player_armorDelta", temp == -1 ? 0 : (temp - lvl) );
 		_hud->SetStateInt ( "player_armor", lvl );
 		_hud->SetStateFloat	( "player_armorpct", idMath::ClampFloat ( 0.0f, 1.0f, (float)lvl / (float)(20) ) );
@@ -3621,7 +3735,6 @@ idPlayer::StartRadioChatter
 */
 void idPlayer::StartRadioChatter ( void ) {
 	if ( hud ) {
-		hud->HandleNamedEvent( "radioChatterUp" );
 	}
 	if ( vehicleController.IsDriving ( ) ) {
 		vehicleController.StartRadioChatter ( );
@@ -9347,10 +9460,30 @@ void idPlayer::Think( void ) {
 	//turn based damgae based off time 
 	int time = -gameLocal.GetTime();
 	if (-timefunc > time) {
-		gameLocal.Printf("kdjakdjaslkjd");
-		idPlayer* player = gameLocal.GetLocalPlayer();
-		player->health = player->health - 10;
+		int action = (gameLocal.random.RandomInt() % 7) + (enemy->health / 100);
+		if (action > 4) {
+			int damage = ((rand() % 16) + 5 + bossatt -protectionValue - powerupdef)/protectionDiv;
+			if (damage < 0) {
+				damage = 0;
+			}
+			health -= damage;
+			gameLocal.Printf("Enemy damaged you for %i health \n", damage);
+		} 
+		else {
+			int newhealth = (gameLocal.random.RandomInt() % 101) + 40;
+			enemy->AdjustHealthByDamage(-newhealth);
+			gameLocal.Printf("Enemy healed %i, new enemy health is %i \n", newhealth, enemy->health);
+		}	
 		timefunc = -9999999999999999999;
+		isturn = 0;
+	}
+
+	if (-poweruptime > time) {
+		powerupatt = 0;
+		powerupdef = 0;
+		gameLocal.Printf("Powerup has ended \n");
+		poweruptime = -9999999999999999999;
+		StopPowerUpEffect(2);
 	}
 
 	if ( talkingNPC ) {

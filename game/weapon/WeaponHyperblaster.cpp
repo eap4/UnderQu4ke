@@ -225,11 +225,21 @@ stateResult_t rvWeaponHyperblaster::State_Fire ( const stateParms_t& parms ) {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			SpinUp ( );
-			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack ( false, 1, spread, 0, 1.0f );
+			nextAttackTime = gameLocal.time + (fireRate * 20 * owner->PowerUpModifier ( PMOD_FIRERATE ));
+			Attack ( false, 0, spread, 0, 1.0f );
+			if (player->protectionDiv != 2) {
+				player->protectionValue = 1;
+				player->protectionDiv = 2;
+				gameLocal.Printf("Equipped divisional armor, damage divided by %i \n", player->protectionDiv);
+			}
+			else {
+				player->protectionDiv = 1; 
+				gameLocal.Printf("Unequipped divisional armor, damage divided by %i \n", player->protectionDiv);
+			}
 			if ( ClipSize() ) {
 				viewModel->SetShaderParm ( HYPERBLASTER_SPARM_BATTERY, (float)AmmoInClip()/ClipSize() );
 			} else {

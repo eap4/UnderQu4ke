@@ -391,16 +391,32 @@ stateResult_t WeaponNapalmGun::State_Fire( const stateParms_t& parms ) {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			if ( wsfl.zoom ) {
 				nextAttackTime = gameLocal.time + (altFireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-				Attack ( true, 1, spread, 0, 1.0f );
+				Attack ( true, 0, spread, 0, 1.0f );
 				PlayAnim ( ANIMCHANNEL_ALL, "idle", parms.blendFrames );
+				if (player->attackValue != 40) {
+					player->attackValue == 40;
+				}
+				else {
+					player->attackValue == 0;
+				}
+				gameLocal.Printf("%i \n", player->attackValue);
 				//fireHeld = true;
 			} else {
 				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-				Attack ( false, 1, spread, 0, 1.0f );
+				Attack ( false, 0, spread, 0, 1.0f );
+				if (player->attackValue != 40) {
+					player->attackValue = 40;
+					gameLocal.Printf("Equipped rock, attack increased %i \n", player->attackValue);
+				}
+				else {
+					player->attackValue = 0;
+					gameLocal.Printf("Unequipped rock, attack increased %i \n", player->attackValue);
+				}
 
 				int animNum = viewModel->GetAnimator()->GetAnim ( "fire" );
 				if ( animNum ) {

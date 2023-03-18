@@ -161,12 +161,29 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
-			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack( false, hitscans, spread, 0, 1.0f );
+			nextAttackTime = gameLocal.time + (fireRate * 3.5 * owner->PowerUpModifier ( PMOD_FIRERATE ));
+			Attack( false, 0, spread, 0, 1.0f );
 			PlayAnim( ANIMCHANNEL_ALL, "fire", 0 );	
-			return SRESULT_STAGE( STAGE_WAIT );
+			if (player->inFight == true) {
+				player->commbatTurn(2);
+			}
+			else {
+				int newhealth = player->health + 10;
+				if ( (newhealth > player->inventory.maxHealth) && (player->health != player->inventory.maxHealth) ) {
+					player->health = player->inventory.maxHealth;
+				}
+				else if (player->health == player->inventory.maxHealth) {
+					gameLocal.Printf("Wasted stim \n");
+				}
+				else {
+					player->health += 10;
+				}
+			}
+			return SRESULT_STAGE(STAGE_WAIT);
+
 	
 		case STAGE_WAIT:
 			if ( (!gameLocal.isMultiplayer && (wsfl.lowerWeapon || AnimDone( ANIMCHANNEL_ALL, 0 )) ) || AnimDone( ANIMCHANNEL_ALL, 0 ) ) {

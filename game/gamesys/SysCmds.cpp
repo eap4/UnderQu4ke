@@ -421,6 +421,97 @@ void GiveStuffToPlayer( idPlayer* player, const char* name, const char* value )
 			else {
 				gameLocal.Printf("Not enough gold, costs 50 gold. Current gold: %i \n", player->gold);
 			}
+			break;
+		case 'm': 
+			if (player->gold >= 100) {
+				player->gold -= 100;
+				player->GiveItem("weapon_dmg");
+				gameLocal.Printf("Bought medium armor for 100 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 100 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 's':
+			if (player->gold >= 150) {
+				player->gold -= 150;
+				player->GiveItem("weapon_grenadelauncher");
+				gameLocal.Printf("Bought heavy armor for 150 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 150 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'd':
+			if (player->gold >= 200) {
+				player->gold -= 200;
+				player->GiveItem("weapon_hyperblaster");
+				gameLocal.Printf("Bought divisional armor for 200 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 200 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'p':
+			if (player->gold >= 100) {
+				player->gold -= 100;
+				player->GiveItem("weapon_lightninggun");
+				gameLocal.Printf("Bought one powerup for 100 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 100 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'h':
+			if (player->gold >= 50) {
+				player->gold -= 50;
+				player->GiveItem("weapon_shotgun");
+				gameLocal.Printf("Bought 10 healthstims for 50 gold, remaining gold: %i \n", player->gold);
+			} 
+			else {
+				gameLocal.Printf("Not enough gold, costs 50 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 't':
+			if (player->gold >= 50) {
+				player->gold -= 50;
+				player->GiveItem("weapon_nailgun");
+				gameLocal.Printf("Bought twig for 50 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 50 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'r':
+			if (player->gold >= 100) {
+				player->gold -= 100;
+				player->GiveItem("weapon_napalmgun");
+				gameLocal.Printf("Bought rock for 100 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 100 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'k':
+			if (player->gold >= 150) {
+				player->gold -= 150;
+				player->GiveItem("weapon_railgun");
+				gameLocal.Printf("Bought knife for 150 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 150 gold. Current gold: %i \n", player->gold);
+			}
+			break;
+		case 'g':
+			if (player->gold >= 200) {
+				player->gold -= 200;
+				player->GiveItem("weapon_rocketlauncher");
+				gameLocal.Printf("Bought gun for 200 gold, remaining gold: %i \n", player->gold);
+			}
+			else {
+				gameLocal.Printf("Not enough gold, costs 200 gold. Current gold: %i \n", player->gold);
+			}
+			break;
 		}
 
 	}
@@ -2951,10 +3042,72 @@ void Cmd_ToggleBuyMenu_f( const idCmdArgs& args ) {
 
 void Cmd_BuyItem_f( const idCmdArgs& args ) {
 	idPlayer* player = gameLocal.GetLocalPlayer();
-	
-	GiveStuffToPlayer(player, args.Argv(1), "&");
+	if (player->shop) {
+		GiveStuffToPlayer(player, args.Argv(1), "&");
+	}
+	else {
+		gameLocal.Printf("Not in shop, find a medic\n");
+	}
 }
 // RITUAL END
+void Cmd_BuyArmor_f(const idCmdArgs& args) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	if (player->shop == true) {
+		if (player->gold < 50) {
+			gameLocal.Printf("Can't buy anything\n");
+		}
+		else if (player->gold < 100) {
+			GiveStuffToPlayer(player, "lightarmor", "&");
+		}
+		else if (player->gold < 150) {
+			GiveStuffToPlayer(player, "mediumarmor", "&");
+		}
+		else if (player->gold < 200) {
+			GiveStuffToPlayer(player, "strongarmor", "&");
+		}
+		else if (player->gold >= 200) {
+			GiveStuffToPlayer(player, "divisionalarmor", "&");
+		}
+	}
+	else {
+		gameLocal.Printf("Not in shop, find a medic\n");
+	}
+
+
+}
+
+void Cmd_BuyWeapon_f(const idCmdArgs& args) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	if (player->shop == true) {
+		if (player->gold < 50) {
+			gameLocal.Printf("Can't buy anything\n");
+		}
+		else if (player->gold < 100) {
+			GiveStuffToPlayer(player, "twig", "&");
+		}
+		else if (player->gold < 150) {
+			GiveStuffToPlayer(player, "rock", "&");
+		}
+		else if (player->gold < 200) {
+			GiveStuffToPlayer(player, "knife", "&");
+		}
+		else if (player->gold >= 200) {
+			GiveStuffToPlayer(player, "gun", "&");
+		}
+	}
+	else {
+		gameLocal.Printf("Not in shop, find a medic\n");
+	}
+
+
+}
+
+
+void Cmd_givegold_f(const idCmdArgs& args) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	player->gold += 100;
+
+}
 
 void Cmd_PlayerEmote_f( const idCmdArgs& args ) {
 	if( gameLocal.GetLocalPlayer() == NULL ) {
@@ -3246,6 +3399,9 @@ void idGameLocal::InitConsoleCommands( void ) {
 // squirrel: Mode-agnostic buymenus
 	cmdSystem->AddCommand( "buyMenu",				Cmd_ToggleBuyMenu_f,		CMD_FL_GAME,				"Toggle buy menu (if in a buy zone and the game type supports it)" );
 	cmdSystem->AddCommand( "buy",					Cmd_BuyItem_f,				CMD_FL_GAME,				"Buy an item (if in a buy zone and the game type supports it)" );
+	cmdSystem->AddCommand("givegold", Cmd_givegold_f, CMD_FL_GAME, "give gold");
+	cmdSystem->AddCommand("buyarmor", Cmd_BuyArmor_f, CMD_FL_GAME, "buys most expensive armor you can get");
+	cmdSystem->AddCommand("buyweapon", Cmd_BuyWeapon_f, CMD_FL_GAME, "buys most expensive weapon you can get");
 // RITUAL END
 
 }

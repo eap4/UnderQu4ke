@@ -309,12 +309,22 @@ stateResult_t rvWeaponDarkMatterGun::State_Fire ( const stateParms_t& parms ) {
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			StopRings ( );
 
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack ( false, 1, spread, 0, 1.0f );
+			Attack(false, 0, spread, 0, 1.0f);
+			if (player->protectionValue != 4) {
+				player->protectionValue = 4;
+				player->protectionDiv = 1;
+				gameLocal.Printf("Equipped medium armor, damage reduced by %i \n", player->protectionValue);
+			}
+			else {
+				player->protectionValue = 0;
+				gameLocal.Printf("Unequipped medium armor, damage reduced by %i \n", player->protectionValue);
+			}
 			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );
 	

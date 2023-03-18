@@ -1615,8 +1615,9 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	const idKeyValue*	kv;
 	idPlayer* player = gameLocal.GetLocalPlayer();
 
-	gameLocal.Printf("got here \n");
-	player->gotKill();
+	if (location == 0) {
+		player->gotKill();
+	}
 	
 	if ( g_debugDamage.GetBool() ) {
 		gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
@@ -2093,7 +2094,6 @@ void idAI::UpdateEnemy ( void ) {
 	if (enemy.range < 100 && player->inFight == false) {
 		idAI* ai = this;
 		player->combatBegin(ai);
-		gameLocal.Printf("In if");
 		Event_StopThinking();
 	}
 

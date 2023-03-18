@@ -296,7 +296,9 @@ public:
 	idAngles				spawnAngles;
 	idAngles				viewAngles;			// player view angles
 	idAngles				cmdAngles;			// player cmd angles
-	int						xp, lvl, turn, timefunc;
+	int						xp, lvl, isturn, timefunc, bossdef, bossatt, bossgold, bossxp, poweruptime, powerupatt, powerupdef, bossact;
+	int						actcount;
+	bool					shop;
 	int						buttonMask;
 	int						oldButtons;
 	int						oldFlags;
@@ -306,6 +308,7 @@ public:
 	void					gotKill(void);
 	void					combatBegin(idAI*);
 	void					commbatTurn(int);
+	bool					hasStim;
 	idAI*					enemy;
 	struct playerFlags_s {
 		bool		forward			:1;

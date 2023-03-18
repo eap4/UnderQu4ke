@@ -642,6 +642,7 @@ stateResult_t rvWeaponNailgun::State_Fire( const stateParms_t& parms ) {
 		STAGE_DONE,
 		STAGE_SPINEMPTY,		
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			if ( !wsfl.attack ) {
@@ -650,6 +651,15 @@ stateResult_t rvWeaponNailgun::State_Fire( const stateParms_t& parms ) {
 			}
 			if ( DrumSpin ( NAILGUN_DRUMSPEED_FAST, 2 ) ) {
 				PostState ( "Fire", 2 );
+				if (player->attackValue != 20) {
+					player->attackValue = 20;
+					gameLocal.Printf("Equipped twig, attack increased %i \n", player->attackValue);
+				}
+				else {
+					player->attackValue = 0;
+					gameLocal.Printf("Unequipped knife, attack increased %i \n", player->attackValue);
+				}
+	
 				return SRESULT_DONE;
 			}
 			nextAttackTime = gameLocal.time;
@@ -667,11 +677,25 @@ stateResult_t rvWeaponNailgun::State_Fire( const stateParms_t& parms ) {
 			}
 
 			if ( wsfl.zoom ) {				
-				Attack ( true, 1, spread, 0.0f, 1.0f );
+				Attack ( true, 0, spread, 0.0f, 1.0f );
 				nextAttackTime = gameLocal.time + (altFireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
+				if (player->attackValue != 20) {
+					player->attackValue = 20;
+				}
+				else {
+					player->attackValue = 0;
+				}
+				gameLocal.Printf("%i \n", player->attackValue);
 			} else {
-				Attack ( false, 1, spread, 0.0f, 1.0f );
+				Attack ( false, 0, spread, 0.0f, 1.0f );
 				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
+				if (player->attackValue != 20) {
+					player->attackValue = 20;
+				}
+				else {
+					player->attackValue = 0;
+				}
+				gameLocal.Printf("%i \n", player->attackValue);
 			}
 			
 			// Play the exhaust effects

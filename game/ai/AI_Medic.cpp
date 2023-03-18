@@ -366,6 +366,7 @@ void rvAIMedic::SetHealValues( idPlayer* player )
 
 bool rvAIMedic::CheckTakePatient( idPlayer* player )
 {
+
 	if ( !player )
 	{
 		return false;
@@ -469,7 +470,19 @@ rvAIMedic::Think
 */
 void rvAIMedic::Think ( void ) {
 	rvAITactical::Think ( );
-
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	idUserInterface* hud = player->GetHud();
+	if (DistanceTo(player) < 150) {
+		if (DistanceTo(player) < 100) {
+			player->shop = true;
+			hud->HandleNamedEvent("radioChatterUp");
+		}
+		else {
+			player->shop = false;
+			hud->HandleNamedEvent("radioChatterDown");
+		}
+	}
+	
 //	while( entMedic.getKey("alive") == "true" && entMedic.getKey("healer") == "1")	
 //???
 	if ( !noAutoHeal )

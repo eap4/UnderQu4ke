@@ -142,10 +142,20 @@ stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) 
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer* player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-			Attack ( false, 1, spread, 0, 1.0f );
+			Attack ( false, 0, spread, 0, 1.0f );
+			if (player->protectionValue != 6) {
+				player->protectionValue = 6;
+				player->protectionDiv = 1;
+				gameLocal.Printf("Equipped strong armor, damage reduced by %i \n", player->protectionValue);
+			}
+			else {
+				player->protectionValue = 0;
+				gameLocal.Printf("Unequipped strong armor, damage reduced by %i \n", player->protectionValue);
+			}
 			PlayAnim ( ANIMCHANNEL_ALL, GetFireAnim(), 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );
 	
