@@ -140,10 +140,7 @@ rvMonsterGrunt::CheckActions
 */
 bool rvMonsterGrunt::CheckActions ( void ) {
 	// If our health is below the rage threshold then enrage
-	if ( health < rageThreshold ) { 
-		PerformAction ( "Torso_Enrage", 4, true );
-		return true;
-	}
+	
 
 	// Moving melee attack?
 	if ( PerformAction ( &actionMeleeMoveAttack, (checkAction_t)&idAI::CheckAction_MeleeAttack, NULL ) ) {
@@ -224,10 +221,6 @@ rvMonsterGrunt::AdjustHealthByDamage
 */
 void rvMonsterGrunt::AdjustHealthByDamage ( int damage ) {
 	// Take less damage during enrage process 
-	if ( rageThreshold && health < rageThreshold ) { 
-		health -= (damage * 0.25f);
-		return;
-	}
 	return idAI::AdjustHealthByDamage ( damage );
 }
 
