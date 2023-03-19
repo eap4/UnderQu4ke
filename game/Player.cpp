@@ -1476,10 +1476,6 @@ void idPlayer::commbatTurn(int turn) {
 			health += 20;
 		}
 	}
-	if ( enemy->health > 0 && actcount != 3) {
-		isturn = 1;
-		timefunc = gameLocal.GetTime() + 3000;
-	}
 
 	if (actcount == 3) {
 		enemy->health = 1; 
@@ -1513,7 +1509,10 @@ void idPlayer::commbatTurn(int turn) {
 		bossgold = 0;
 		bossxp = 0;
 	}
-
+	if (enemy->health > 0 && actcount != 3) {
+		isturn = 1;
+		timefunc = gameLocal.GetTime() + 3000;
+	}
 	return;
 }
 

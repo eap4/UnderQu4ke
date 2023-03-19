@@ -119,7 +119,6 @@ void rvMonsterGrunt::RageStart ( void ) {
 	pain.threshold = 0;
 
 	// Start over with health when enraged
-	health = spawnArgs.GetInt ( "health" );
 	
 	// No more going to rage
 	rageThreshold = 0;
